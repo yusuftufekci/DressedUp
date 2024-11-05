@@ -1,3 +1,5 @@
+using System.Reflection;
+using DressedUp.Domain.Interfaces;
 using DressedUp.Infrastructure.Data;
 using DressedUp.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +11,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services to the container.
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+var infrastructureAssembly = Assembly.GetAssembly(typeof(UserRepository)); // Örneğin UserRepository gibi bilinen bir repository classını kullanabilirsiniz
+
+builder.Services.Scan(scan => scan
+    .FromAssemblies(infrastructureAssembly!)
+    .AddClasses(classes => classes.Where(type => type.Namespace == "OutfitSharingApp.Infrastructure.Repositories"))
+    .AsImplementedInterfaces()
+    .WithScopedLifetime()
+);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
