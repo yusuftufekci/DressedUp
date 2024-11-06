@@ -8,9 +8,9 @@ public class User
     public string Lastname { get; private set; }
     public string Email { get; private set; }
     public string PasswordHash { get; private set; }
-    public string Bio { get; private set; }
-    public string MobileNo { get; private set; }
-    public string ProfilePicUrl { get; private set; }
+    public string? Bio { get; private set; }
+    public string? MobileNo { get; private set; }
+    public string? ProfilePicUrl { get; private set; }
     public bool IsProfileHidden { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }

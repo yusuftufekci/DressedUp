@@ -1,5 +1,4 @@
 using System.Reflection;
-using DressedUp.Domain.Interfaces;
 using DressedUp.Infrastructure.Data;
 using DressedUp.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +14,7 @@ var infrastructureAssembly = Assembly.GetAssembly(typeof(UserRepository)); // Ö
 
 builder.Services.Scan(scan => scan
     .FromAssemblies(infrastructureAssembly!)
-    .AddClasses(classes => classes.Where(type => type.Namespace == "OutfitSharingApp.Infrastructure.Repositories"))
+    .AddClasses(classes => classes.Where(type => type.Namespace == "DressedUp.Infrastructure.Repositories"))
     .AsImplementedInterfaces()
     .WithScopedLifetime()
 );
@@ -25,7 +24,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
