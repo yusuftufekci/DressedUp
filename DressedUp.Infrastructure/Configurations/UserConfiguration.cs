@@ -9,6 +9,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.ToTable("Users"); // Tablo adının doğru olduğundan emin olun
+        builder.Property(e => e.UserId)
+            .ValueGeneratedOnAdd();
         builder.HasKey(u => u.UserId);
         builder.Property(u => u.UserId) // 
             .HasColumnName("user_id"); 

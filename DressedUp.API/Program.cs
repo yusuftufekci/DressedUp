@@ -1,9 +1,19 @@
 using System.Reflection;
+using DressedUp.API.Middleware;
+using DressedUp.Application.Commands.User.Authentication;
+using DressedUp.Application.Mappings;
+using DressedUp.Application.Validators;
 using DressedUp.Infrastructure.Data;
 using DressedUp.Infrastructure.Repositories;
+using FluentValidation.AspNetCore;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Validation
+builder.Services.AddControllers()
+    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<RegisterUserCommandValidator>());
 
 // Register DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -20,10 +30,19 @@ builder.Services.Scan(scan => scan
 );
 
 builder.Services.AddControllers();
+
+// AutoMapper konfigürasyonu
+builder.Services.AddAutoMapper(cfg => MappingProfileRegister.RegisterMappings(cfg));
+
+//Mediatr implementation
+builder.Services.AddMediatR(typeof(RegisterUserCommand).Assembly);
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
+builder.Services.AddSwaggerGen(c =>
+{
+    c.EnableAnnotations(); // Swagger Annotations'ı etkinleştir
+});
 
 
 var app = builder.Build();
@@ -39,6 +58,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionMiddleware>();
+
 
 app.MapControllers();
 

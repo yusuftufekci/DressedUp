@@ -1,7 +1,12 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using DressedUp.Domain.Exceptions;
+
 namespace DressedUp.Domain.Aggregates.UserAggregate;
 
 public class User
 {
+    [Key]
     public int UserId { get; private set; }
     public string Username { get; private set; }
     public string Name { get; private set; }
@@ -12,11 +17,18 @@ public class User
     public string? MobileNo { get; private set; }
     public string? ProfilePicUrl { get; private set; }
     public bool IsProfileHidden { get; private set; }
-    public DateTime CreatedAt { get; private set; }
-    public DateTime UpdatedAt { get; private set; }
+    public DateTime? CreatedAt { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
 
+    public User()
+    {
+        
+    }
     public User(string username, string name, string lastname, string email, string passwordHash)
     {
+        if (string.IsNullOrEmpty(username)) throw new DomainException("Username is required.");
+        if (string.IsNullOrEmpty(email)) throw new DomainException("Email is required.");
+        if (!IsValidEmail(email)) throw new DomainException("Invalid email format.");
         Username = username;
         Name = name;
         Lastname = lastname;
@@ -25,6 +37,9 @@ public class User
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
+    private bool IsValidEmail(string email) =>
+        // Basit bir email format kontrolü yapılabilir
+        email.Contains("@");
 
     public void UpdateProfile(string bio, string profilePicUrl, bool isProfileHidden)
     {

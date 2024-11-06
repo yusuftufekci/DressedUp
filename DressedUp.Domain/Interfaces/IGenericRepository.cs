@@ -13,4 +13,8 @@ public interface IGenericRepository<T> where T : class
     Task<int> CountAsync();
     Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
     Task<IEnumerable<T>> GetPagedAsync(int pageNumber, int pageSize, Expression<Func<T, object>> orderBy, bool ascending = true);
+    Task<IEnumerable<T>> WhereAsync(Expression<Func<T, bool>> predicate);
+    Task<T> FindOneAsync(Expression<Func<T, bool>> predicate);
+
+
 }

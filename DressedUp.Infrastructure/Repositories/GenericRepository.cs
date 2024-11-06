@@ -39,16 +39,22 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     public async Task AddAsync(T entity)
     {
         await _dbSet.AddAsync(entity);
+        await _context.SaveChangesAsync(); // Değişiklikleri kaydeder
+
     }
 
     public void Update(T entity)
     {
         _dbSet.Update(entity);
+         _context.SaveChangesAsync(); // Değişiklikleri kaydeder
+
     }
 
     public void Delete(T entity)
     {
         _dbSet.Remove(entity);
+         _context.SaveChangesAsync(); // Değişiklikleri kaydeder
+
     }
 
     public async Task<int> CountAsync()
@@ -71,5 +77,15 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
+    }
+    
+    public async Task<IEnumerable<T>> WhereAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await _dbSet.Where(predicate).ToListAsync();
+    }
+    
+    public async Task<T> FindOneAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await _dbSet.FirstOrDefaultAsync(predicate);
     }
 }
