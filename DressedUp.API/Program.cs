@@ -37,6 +37,13 @@ builder.Services.AddAutoMapper(cfg => MappingProfileRegister.RegisterMappings(cf
 //Mediatr implementation
 builder.Services.AddMediatR(typeof(RegisterUserCommand).Assembly);
 
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+    .AddEnvironmentVariables();
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -47,13 +54,22 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+   // app.UseSwagger();
+ //   app.UseSwaggerUI();
+//}
+
+ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
+ {
+     app.UseSwagger();
+     app.UseSwaggerUI(c =>
+     {
+         c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+         c.RoutePrefix = string.Empty; // Swagger'ı ana dizinde çalıştırmak için
+     });
+ }
 
 app.UseHttpsRedirection();
 
