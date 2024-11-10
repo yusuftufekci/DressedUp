@@ -1,3 +1,5 @@
+using DressedUp.Application.Common.Enums;
+
 namespace DressedUp.Application.Responses;
 
 public class Result<T>
@@ -15,21 +17,26 @@ public class Result<T>
     /// </summary>
     public T Data { get; }
     /// <summary>
+    /// A code representing the specific type of error, if applicable.
+    /// </summary>
+    public ErrorCode? ErrorCode { get; set; }
+    /// <summary>
     /// Any error messages related to the operation.
     /// </summary>
-    public List<string> Errors { get; } // Errors özelliğini ekledik
+    public List<string> Errors { get; set; }  // Çoklu hata mesajları için liste
 
-    private Result(T data, bool isSuccess, string message, List<string> errors = null)
+    private Result(T data, bool isSuccess, string message, ErrorCode? errorCode = null, List<string> errors = null)
     {
         IsSuccess = isSuccess;
-        Message = message;
         Data = data;
-        Errors = errors ?? new List<string>(); // Errors özelliği hata durumlarında dolacak
+        Message = message;
+        ErrorCode = errorCode;
+        Errors = errors ?? new List<string>();  // Hata durumlarında Errors dolacak
     }
 
-    // Başarılı sonuç için factory metodu
-    public static Result<T> Success(T data, string message = null) => new Result<T>(data, true, message);
+    public static Result<T> Success(T data, string message = "") 
+        => new Result<T>(data, true, message);
 
-    // Başarısız sonuç için factory metodu
-    public static Result<T> Failure(string message, List<string> errors = null) => new Result<T>(default, false, message, errors);
+    public static Result<T> Failure(string message, ErrorCode errorCode, List<string> errors = null) 
+        => new Result<T>(default, false, message, errorCode, errors);
 }

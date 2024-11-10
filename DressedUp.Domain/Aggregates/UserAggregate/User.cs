@@ -19,6 +19,9 @@ public class User
     public bool IsProfileHidden { get; private set; }
     public DateTime? CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
+    
+    private List<RefreshToken> _refreshTokens = new List<RefreshToken>();
+    public IReadOnlyCollection<RefreshToken> RefreshTokens => _refreshTokens.AsReadOnly();
 
     public User()
     {
@@ -47,5 +50,18 @@ public class User
         ProfilePicUrl = profilePicUrl;
         IsProfileHidden = isProfileHidden;
         UpdatedAt = DateTime.UtcNow;
+    }
+    public void AddRefreshToken(string token, DateTime expiryDate, string createdByIp)
+    {
+        _refreshTokens.Add(new RefreshToken(UserId, token, expiryDate, createdByIp));
+    }
+
+    public void RevokeRefreshToken(string token, string revokedByIp)
+    {
+        var refreshToken = _refreshTokens.SingleOrDefault(rt => rt.Token == token);
+        if (refreshToken != null)
+        {
+            refreshToken.Revoke(revokedByIp);
+        }
     }
 }

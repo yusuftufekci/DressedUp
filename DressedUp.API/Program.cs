@@ -1,6 +1,8 @@
 using System.Reflection;
 using DressedUp.API.Middleware;
 using DressedUp.Application.Commands.User.Authentication;
+using DressedUp.Application.Common.Interfaces;
+using DressedUp.Application.Common.Services;
 using DressedUp.Application.Mappings;
 using DressedUp.Application.Validators;
 using DressedUp.Infrastructure.Data;
@@ -29,6 +31,10 @@ builder.Services.Scan(scan => scan
     .WithScopedLifetime()
 );
 
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddHttpContextAccessor();  // IHttpContextAccessor'u ekleyin
+builder.Services.AddScoped<IClientIpService, ClientIpService>(); 
+
 builder.Services.AddControllers();
 
 // AutoMapper konfigürasyonu
@@ -42,6 +48,16 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
     .AddEnvironmentVariables();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -61,17 +77,22 @@ var app = builder.Build();
  //   app.UseSwaggerUI();
 //}
 
- if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
- {
-     app.UseSwagger();
-     app.UseSwaggerUI(c =>
-     {
-         c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-         c.RoutePrefix = string.Empty; // Swagger'ı ana dizinde çalıştırmak için
-     });
- }
 
-app.UseHttpsRedirection();
+ app.UseStaticFiles();
+
+
+
+ app.UseSwagger();
+ app.UseSwaggerUI(c =>
+ {
+     c.SwaggerEndpoint("/swagger/v1/swagger.json", "DressedUp API V1");
+ });
+ 
+
+app.UseCors("AllowAll");
+
+
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

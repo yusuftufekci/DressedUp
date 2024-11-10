@@ -1,9 +1,10 @@
+using DressedUp.Application.DTOs.Authentication;
 using DressedUp.Application.Responses;
 using MediatR;
 
 namespace DressedUp.Application.Commands.User.Authentication;
 
-public class RegisterUserCommand : IRequest<Result<int>>
+public class RegisterUserCommand : IRequest<Result<AuthData>>
 {
     public string Username { get; set; }
     public string Email { get; set; }

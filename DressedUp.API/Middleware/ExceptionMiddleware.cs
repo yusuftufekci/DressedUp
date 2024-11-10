@@ -1,5 +1,7 @@
 using System.Net;
 using System.Text.Json;
+using DressedUp.Application.Common.Enums;
+using DressedUp.Application.Exceptions;
 using DressedUp.Application.Responses;
 using DressedUp.Domain.Exceptions;
 using FluentValidation;
@@ -30,34 +32,48 @@ public class ExceptionMiddleware
             }
         }
 
-        private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+       private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    {
+        context.Response.ContentType = "application/json";
+        
+        // Hata türüne göre uygun status code ve response döndürme
+        var (statusCode, response) = GenerateErrorResponse(exception);
+        
+        context.Response.StatusCode = statusCode;
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var jsonResponse = JsonSerializer.Serialize(response, options);
+
+        return context.Response.WriteAsync(jsonResponse);
+    }
+
+    private static (int statusCode, Result<string> response) GenerateErrorResponse(Exception exception)
+    {
+        if (exception is CustomException customException)
         {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = exception switch
+            // ErrorCode’a göre özel HTTP durum kodları
+            var statusCode = customException.ErrorCode switch
             {
-                ValidationException => (int)HttpStatusCode.BadRequest,
-                DomainException => (int)HttpStatusCode.BadRequest,
+                ErrorCode.InvalidRefreshToken => (int)HttpStatusCode.Unauthorized,
+                ErrorCode.UserNotFound => (int)HttpStatusCode.NotFound,
+                ErrorCode.IpAddressNotFound => (int)HttpStatusCode.BadRequest,
+                ErrorCode.UnexpectedError => (int)HttpStatusCode.InternalServerError,
+                ErrorCode.UsernameExists => (int)HttpStatusCode.Conflict,
+                ErrorCode.EmailExists => (int)HttpStatusCode.Conflict,
+                ErrorCode.UserCredantialFailed => (int)HttpStatusCode.Unauthorized,
+                ErrorCode.ValidationException => (int)HttpStatusCode.BadRequest,
                 _ => (int)HttpStatusCode.InternalServerError
             };
 
-            var response = GenerateErrorResponse(exception);
-            var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-            var jsonResponse = JsonSerializer.Serialize(response, options);
-
-            return context.Response.WriteAsync(jsonResponse);
+            return (
+                statusCode,
+                Result<string>.Failure(customException.Message, customException.ErrorCode)
+            );
         }
 
-        private static Result<string> GenerateErrorResponse(Exception exception)
-        {
-            return exception switch
-            {
-                ValidationException validationException => 
-                    Result<string>.Failure("Validation failed", validationException.Errors.Select(e => e.ErrorMessage).ToList()),
-
-                DomainException domainException => 
-                    Result<string>.Failure(domainException.Message),
-
-                _ => Result<string>.Failure("An unexpected error occurred", new List<string> { exception.Message })
-            };
-        }
+        // Diğer beklenmeyen hatalar için genel durum
+        return (
+            (int)HttpStatusCode.InternalServerError,
+            Result<string>.Failure("An unexpected error occurred", ErrorCode.UnexpectedError, new List<string> { exception.Message })
+        );
+    }
     }
