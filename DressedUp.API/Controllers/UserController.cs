@@ -57,7 +57,7 @@ public class UserController : ControllerBase
     /// <param name="command">The user registration details.</param>
     /// <returns>A Result containing the new user's ID if registration is successful; otherwise, an error message.</returns>
     [HttpPost("register")]
-    [ProducesResponseType(typeof(Result<int>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<AuthData>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(Result<string>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(Result<string>), StatusCodes.Status409Conflict)]
     [SwaggerOperation(
@@ -67,18 +67,6 @@ public class UserController : ControllerBase
     public async Task<IActionResult> RegisterUser([FromBody] RegisterUserCommand command)
     {
         var result = await _mediator.Send(command);
-
-        if (!result.IsSuccess)
-        {
-            return result.ErrorCode switch
-            {
-                ErrorCode.EmailExists => Conflict(Result<string>.Failure("A user with this email already exists.", ErrorCode.EmailExists)),
-                ErrorCode.UsernameExists => Conflict(Result<string>.Failure("A user with this username already exists.", ErrorCode.UsernameExists)),
-                ErrorCode.IpAddressNotFound => BadRequest(Result<string>.Failure(result.Message, ErrorCode.IpAddressNotFound)),
-                _ => StatusCode(StatusCodes.Status500InternalServerError, Result<string>.Failure("An unexpected error occurred.", ErrorCode.UnexpectedError))
-            };
-        }
-
         return Ok(result);
     }
     
@@ -98,17 +86,6 @@ public class UserController : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginUserCommand command)
     {
         var result = await _mediator.Send(command);
-
-        if (!result.IsSuccess)
-        {
-            return result.ErrorCode switch
-            {
-                ErrorCode.UserCredantialFailed => Unauthorized(Result<string>.Failure("Invalid credentials", ErrorCode.UserCredantialFailed)),
-                ErrorCode.IpAddressNotFound => BadRequest(Result<string>.Failure(result.Message, ErrorCode.IpAddressNotFound)),
-                _ => StatusCode(StatusCodes.Status500InternalServerError, Result<string>.Failure("An unexpected error occurred.", ErrorCode.UnexpectedError))
-            };
-        }
-
         return Ok(result);
     }
     
@@ -129,18 +106,6 @@ public class UserController : ControllerBase
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenCommand command)
     {
         var result = await _mediator.Send(command);
-
-        if (!result.IsSuccess)
-        {
-            // Hata koduna göre kontrol
-            return result.ErrorCode switch
-            {
-                ErrorCode.InvalidRefreshToken => Unauthorized(Result<string>.Failure(result.Message, ErrorCode.InvalidRefreshToken)),
-                ErrorCode.UserNotFound => BadRequest(Result<string>.Failure(result.Message, ErrorCode.UserNotFound)),
-                _ => StatusCode(StatusCodes.Status500InternalServerError, Result<string>.Failure("An unexpected error occurred.", ErrorCode.UnexpectedError))
-            };
-        }
-
         return Ok(result);
     }
     
