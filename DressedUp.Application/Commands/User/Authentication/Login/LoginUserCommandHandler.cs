@@ -31,7 +31,7 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, Result<
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             throw new CustomException("Invalid credentials", ErrorCode.UserCredantialFailed);
         
-        var existingRefreshTokens = await _refreshTokenRepository.GetByUserIdAsync(user.UserId);
+        var existingRefreshTokens = await _refreshTokenRepository.WhereAsync(p=>p.UserId == user.UserId && p.DeviceId == request.DeviceId);
 
          string  userIp = _clientIpService.GetClientIpAddress();
 
@@ -44,12 +44,12 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, Result<
   
         // Access ve refresh token oluştur
         var accessToken = _tokenService.GenerateAccessToken(user, userIp);
-        var refreshToken = _tokenService.GenerateRefreshToken(user.UserId, userIp);
+        var refreshToken = _tokenService.GenerateRefreshToken(user.UserId, userIp, request.DeviceId);
         await _refreshTokenRepository.AddAsync(refreshToken);
 
         var authData = new AuthData
         {
-            Token = accessToken,
+            AccessToken = accessToken,
             RefreshToken = refreshToken.Token
         };
 

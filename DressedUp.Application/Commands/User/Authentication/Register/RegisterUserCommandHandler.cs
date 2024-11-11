@@ -38,19 +38,19 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
             throw new CustomException("Username already exists", ErrorCode.UsernameExists);
         }
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-        var user = new Domain.Aggregates.UserAggregate.User(request.Username, request.Name, request.Lastname, request.Email, request.Password);
+        var user = new Domain.Aggregates.UserAggregate.User(request.Username, request.Name, request.Lastname, request.Email, passwordHash);
         await _userRepository.AddAsync(user);
         
         string userIp = _clientIpService.GetClientIpAddress();
         
         // Yeni access ve refresh token oluştur
         var accessToken = _tokenService.GenerateAccessToken(user,userIp);
-        var refreshToken = _tokenService.GenerateRefreshToken(user.UserId, userIp);
+        var refreshToken = _tokenService.GenerateRefreshToken(user.UserId, userIp, request.DeviceId);
         await _refreshTokenRepository.AddAsync(refreshToken);
 
         var authData = new AuthData
         {
-            Token = accessToken,
+            AccessToken = accessToken,
             RefreshToken = refreshToken.Token
         };
 

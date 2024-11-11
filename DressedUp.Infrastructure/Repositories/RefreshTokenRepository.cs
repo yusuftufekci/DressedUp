@@ -7,7 +7,7 @@ namespace DressedUp.Infrastructure.Repositories;
 
 public class RefreshTokenRepository : GenericRepository<RefreshToken>, IRefreshTokenRepository
 {
-    private readonly AppDbContext _context;
+    
 
     public RefreshTokenRepository(AppDbContext context) : base(context) { }
 
@@ -15,14 +15,14 @@ public class RefreshTokenRepository : GenericRepository<RefreshToken>, IRefreshT
     // Token değerine göre bir refresh token bulur
     public async Task<RefreshToken> GetByTokenAsync(string token)
     {
-        return await _context.RefreshTokens
+        return await _dbSet
             .FirstOrDefaultAsync(rt => rt.Token == token);
     }
 
     // Kullanıcı ID'sine göre tüm refresh token'ları getirir
     public async Task<IEnumerable<RefreshToken>> GetByUserIdAsync(int userId)
     {
-        return await _context.RefreshTokens
+        return await _dbSet
             .Where(rt => rt.UserId == userId)
             .ToListAsync();
     }
@@ -30,11 +30,11 @@ public class RefreshTokenRepository : GenericRepository<RefreshToken>, IRefreshT
     // Kullanıcı ID'sine göre tüm refresh token'ları siler
     public async Task DeleteAllByUserIdAsync(int userId)
     {
-        var tokens = await _context.RefreshTokens
+        var tokens = await _dbSet
             .Where(rt => rt.UserId == userId)
             .ToListAsync();
 
-        _context.RefreshTokens.RemoveRange(tokens);
+        _dbSet.RemoveRange(tokens);
         await _context.SaveChangesAsync();
     }
 }

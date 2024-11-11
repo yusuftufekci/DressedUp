@@ -10,13 +10,14 @@ public class RefreshToken
     public DateTime CreatedDate { get; private set; }
     public string CreatedByIp { get; private set; }
     public DateTime? RevokedDate { get; private set; }
-    public string RevokedByIp { get; private set; }
-    public string ReplacedByToken { get; private set; }
+    public string? RevokedByIp { get; private set; }
+    public string? ReplacedByToken { get; private set; }
     public int UserId { get; private set; }
     public User User { get; private set; }
+    public string DeviceId { get; set; }
 
 
-    public RefreshToken(int userId, string token, DateTime expiryDate, string createdByIp)
+    public RefreshToken(int userId, string token, DateTime expiryDate, string createdByIp, string deviceId)
     {
         UserId = userId;
         Token = token;
@@ -25,6 +26,7 @@ public class RefreshToken
         CreatedByIp = createdByIp;
         IsRevoked = false;
         IsUsed = false;
+        DeviceId = deviceId;
     }
 
     public void Revoke(string revokedByIp)

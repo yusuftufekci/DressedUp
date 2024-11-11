@@ -49,12 +49,12 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         await _refreshTokenRepository.UpdateAsync(existingRefreshToken);
 
         var newAccessToken = _tokenService.GenerateAccessToken(user, userIp);
-        var newRefreshToken = _tokenService.GenerateRefreshToken(user.UserId, userIp);
+        var newRefreshToken = _tokenService.GenerateRefreshToken(user.UserId, userIp, request.DeviceId);
         await _refreshTokenRepository.AddAsync(newRefreshToken);
 
         var authData = new AuthData
         {
-            Token = newAccessToken,
+            AccessToken = newAccessToken,
             RefreshToken = newRefreshToken.Token
         };
 

@@ -11,4 +11,5 @@ public class RegisterUserCommand : IRequest<Result<AuthData>>
     public string Password { get; set; }
     public string Name { get; set; }
     public string Lastname { get; set; }
+    public string DeviceId { get; set; }
 }

@@ -44,9 +44,9 @@ public class TokenService : ITokenService
         return tokenHandler.WriteToken(token);
     }
 
-    public RefreshToken GenerateRefreshToken(int userId, string ipAddress)
+    public RefreshToken GenerateRefreshToken(int userId, string ipAddress, string deviceId)
     {
-        return new RefreshToken(userId, GenerateSecureToken(), DateTime.UtcNow.AddDays(7), ipAddress);
+        return new RefreshToken(userId, GenerateSecureToken(), DateTime.UtcNow.AddDays(7), ipAddress, deviceId);
     }
 
     private string GenerateSecureToken()

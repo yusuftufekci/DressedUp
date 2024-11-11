@@ -9,7 +9,7 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
     public void Configure(EntityTypeBuilder<RefreshToken> builder)
     {
         // Tablo adı
-        builder.ToTable("RefreshTokens");
+        builder.ToTable("RefreshToken");
 
         // Primary key
         builder.HasKey(rt => rt.Id);
@@ -47,5 +47,13 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
             .WithMany(u => u.RefreshTokens)
             .HasForeignKey(rt => rt.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+        builder.Property(u => u.UserId) 
+            .HasColumnName("user_id"); 
+        builder.Property(rt => rt.DeviceId)
+            .IsRequired()            // NOT NULL olarak ayarlanır
+            .HasMaxLength(36)        // UUID formatında 36 karakter uzunluğunda
+            .IsFixedLength(true);
+        builder.Property(u => u.DeviceId) 
+            .HasColumnName("device_id"); 
     }
 }

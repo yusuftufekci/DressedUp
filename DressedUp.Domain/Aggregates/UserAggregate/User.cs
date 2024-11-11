@@ -51,9 +51,9 @@ public class User
         IsProfileHidden = isProfileHidden;
         UpdatedAt = DateTime.UtcNow;
     }
-    public void AddRefreshToken(string token, DateTime expiryDate, string createdByIp)
+    public void AddRefreshToken(string token, DateTime expiryDate, string createdByIp, string deviceId)
     {
-        _refreshTokens.Add(new RefreshToken(UserId, token, expiryDate, createdByIp));
+        _refreshTokens.Add(new RefreshToken(UserId, token, expiryDate, createdByIp,deviceId));
     }
 
     public void RevokeRefreshToken(string token, string revokedByIp)
