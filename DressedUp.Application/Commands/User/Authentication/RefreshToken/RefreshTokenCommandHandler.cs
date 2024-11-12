@@ -48,7 +48,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         existingRefreshToken.Revoke(userIp); // Kullanıcı IP'sini sağlayabilirsiniz
         await _refreshTokenRepository.UpdateAsync(existingRefreshToken);
 
-        var newAccessToken = _tokenService.GenerateAccessToken(user, userIp);
+        var newAccessToken = _tokenService.GenerateAccessToken(user, userIp, request.DeviceId);
         var newRefreshToken = _tokenService.GenerateRefreshToken(user.UserId, userIp, request.DeviceId);
         await _refreshTokenRepository.AddAsync(newRefreshToken);
 

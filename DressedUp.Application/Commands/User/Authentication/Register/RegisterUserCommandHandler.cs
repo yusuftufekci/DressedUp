@@ -44,7 +44,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
         string userIp = _clientIpService.GetClientIpAddress();
         
         // Yeni access ve refresh token oluştur
-        var accessToken = _tokenService.GenerateAccessToken(user,userIp);
+        var accessToken = _tokenService.GenerateAccessToken(user, userIp, request.DeviceId);
         var refreshToken = _tokenService.GenerateRefreshToken(user.UserId, userIp, request.DeviceId);
         await _refreshTokenRepository.AddAsync(refreshToken);
 

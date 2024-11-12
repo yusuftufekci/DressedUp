@@ -18,7 +18,7 @@ public class TokenService : ITokenService
         _configuration = configuration;
     }
 
-    public string GenerateAccessToken(User user, string ipAddress)
+    public string GenerateAccessToken(User user, string ipAddress, string deviceId)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:SecretKey"]);
@@ -31,7 +31,7 @@ public class TokenService : ITokenService
                 new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),                 // Username
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),                        // Email
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),           // Token ID
-                new Claim("device", "User's device info"),                                   // Cihaz Bilgisi (Gerektiğinde değiştirin)
+                new Claim("device", deviceId),                                   // Cihaz Bilgisi (Gerektiğinde değiştirin)
                 new Claim("ip", ipAddress),                                        // IP Adresi (Güvenlik için kullanıcı IP adresi)
                 new Claim(JwtRegisteredClaimNames.Iss, _configuration["JwtSettings:Issuer"]), // Issuer
                 new Claim(JwtRegisteredClaimNames.Aud, _configuration["JwtSettings:Audience"]) // Au
