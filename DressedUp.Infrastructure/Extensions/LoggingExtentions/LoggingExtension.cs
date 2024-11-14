@@ -21,19 +21,14 @@ public static void ConfigureSerilog(this IHostBuilder hostBuilder)
     hostBuilder.UseSerilog((context, services, loggerConfiguration) =>
     {
         var configuration = context.Configuration;
-        var environment = context.HostingEnvironment.EnvironmentName;
 
-        // Doğrulama için loglama
-        Console.WriteLine("Environment: " + environment);
-        Console.WriteLine("AccessKey from secret.json: " + configuration["AWS:AccessKey"]);
-
-        if (environment == "Development")
+        if (context.HostingEnvironment.EnvironmentName == "Development")
         {
             var awsAccessKey = configuration["AWS:AccessKey"];
             var awsSecretKey = configuration["AWS:SecretKey"];
             var awsRegion = configuration["AWS:Region"] ?? "eu-north-1";
 
-            var logGroupName = configuration["Serilog:LogGroupName"] ?? "/DressedUp-APP";
+            var logGroupName = configuration["Serilog:LogGroupName"] ?? "/DressedUp-APP/Development";
 
             var cloudWatchOptions = new CloudWatchSinkOptions
             {
