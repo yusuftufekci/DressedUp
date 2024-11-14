@@ -5,17 +5,26 @@ using DressedUp.Application.Common.Interfaces;
 using DressedUp.Application.Common.Services;
 using DressedUp.Application.Mappings;
 using DressedUp.Application.Validators;
+using DressedUp.Domain.Interfaces.Logging;
 using DressedUp.Infrastructure.Data;
+using DressedUp.Infrastructure.Extensions.LoggingExtentions;
 using DressedUp.Infrastructure.Repositories;
+using DressedUp.Infrastructure.Services.Logging;
 using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Host.ConfigureSerilog();
+
 
 // Validation
 builder.Services.AddControllers()
     .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<RegisterUserCommandValidator>());
+
 
 // Register DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -33,7 +42,8 @@ builder.Services.Scan(scan => scan
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddHttpContextAccessor();  // IHttpContextAccessor'u ekleyin
-builder.Services.AddScoped<IClientIpService, ClientIpService>(); 
+builder.Services.AddScoped<IClientIpService, ClientIpService>();
+builder.Services.AddScoped(typeof(ILoggerService<>), typeof(LoggerService<>));
 
 builder.Services.AddControllers();
 
@@ -43,11 +53,6 @@ builder.Services.AddAutoMapper(cfg => MappingProfileRegister.RegisterMappings(cf
 //Mediatr implementation
 builder.Services.AddMediatR(typeof(RegisterUserCommand).Assembly);
 
-builder.Configuration
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
-    .AddEnvironmentVariables();
 
 builder.Services.AddCors(options =>
 {
@@ -81,6 +86,7 @@ var app = builder.Build();
  app.UseStaticFiles();
 
 
+ Log.Information("Application started");
 
  app.UseSwagger();
  app.UseSwaggerUI(c =>
@@ -91,9 +97,12 @@ var app = builder.Build();
 
 app.UseCors("AllowAll");
 
+builder.WebHost.UseUrls("http://*:8080"); // Use HTTP for production
 
-//app.UseHttpsRedirection();
-
+if (builder.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthorization();
 
 app.UseMiddleware<ExceptionMiddleware>();
